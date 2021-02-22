@@ -38,13 +38,14 @@ le = LabelEncoder()
 
 def LabelEncoder(df):
     for i in df.columns:
-        if df.dtypes[i] == object or df.dtypes[i] == bool:
+        if df.dtypes[i] == object:
             le.fit(df[i].astype(str))
             df[i] = le.transform(df[i].astype(str))
     return df
 
 
 modified_data = LabelEncoder(data)
+modified_data['Weekend']= le.fit_transform(modified_data['Weekend'])  #also convert Weekend that is a bool variable
 print(modified_data.info())
 
 # Define input variables and target (label)
@@ -79,7 +80,7 @@ X_sm, y_sm = SMOTE().fit_resample(x, y)
 sns.countplot(y_sm, ax=ax3)
 
 # Splitting the data
-X_train, X_test, y_train, y_test = train_test_split(X_sm, y_sm, test_size=0.3, random_state=33)
+X_train, X_test, y_train, y_test = train_test_split(X_sm, y_sm, test_size=0.2, random_state=33)
 
 # Scaler
 scaler = StandardScaler()
@@ -125,8 +126,8 @@ if colIdx != 0:
 gcp_input = modified_data[cols]
 
 # Final transformations required by GCP
-gcp_input = gcp_input.astype('float')
-gcp_input['Revenue'] = gcp_input['Revenue'].astype('int')
+gcp_input.iloc[:,1:15] = gcp_input.iloc[:,1:15].astype('float')
+gcp_input[label] = gcp_input[label].astype('string')
 # Writes the final dataset as a csv file
 gcp_input.to_csv('online_shoppers_gcp_input.csv', index=False, header=False)
 
@@ -135,7 +136,7 @@ titles_options = [("XGBoost confusion matrix, without normalization", None),
                   ("XGBoost normalized confusion matrix", 'true')]
 for title, normalize in titles_options:
     disp = plot_confusion_matrix(xgb_clf, X_test, y_test,
-                                 display_labels=[1, 0],
+                                 display_labels=[True, False],
                                  cmap=plt.cm.Blues,
                                  normalize=normalize)
     disp.ax_.set_title(title)
