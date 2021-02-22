@@ -102,11 +102,11 @@ gb_training_score = gb_clf.score(X_train, y_train)
 predictions_gb= gb_clf.predict(X_test)
 
 # Check scores
-print("XGBoost Accuracy score:", round((xgb_score),4)*100,"%")
-print("XGBoost TRAINING Accuracy score:", round((xgb_training_score),4)*100,"%")
+print("XGBoost Accuracy score:", (round((xgb_score),3))*100,"%")
+print("XGBoost Training Accuracy score:", (round((xgb_training_score),3))*100,"%")
 
-print("Gradient Boosting Accuracy score:", round((gb_score),4)*100,"%")
-print("Gradient Boosting Training Accuracy score:", round((gb_training_score),4)*100,"%")
+print("Gradient Boosting Accuracy score:", (round((gb_score),3))*100,"%")
+print("Gradient Boosting Training Accuracy score:", (round((gb_training_score),3))*100,"%")
 
 # Classification reports
 print("XGBoost Classification Report")
@@ -130,8 +130,8 @@ gcp_input['Revenue'] = gcp_input['Revenue'].astype('int')
 gcp_input.to_csv('online_shoppers_gcp_input.csv', index=False, header=False)
 
 # Confusion matrix
-titles_options = [("Confusion matrix, without normalization", None),
-                  ("Normalized confusion matrix", 'true')]
+titles_options = [("XGBoost confusion matrix, without normalization", None),
+                  ("XGboost normalized confusion matrix", 'true')]
 for title, normalize in titles_options:
     disp = plot_confusion_matrix(xgb_clf, X_test, y_test,
                                  display_labels=[1, 0],
