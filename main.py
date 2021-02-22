@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 from xgboost.sklearn import XGBClassifier
+from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.metrics import plot_confusion_matrix
 
 # Load the file
@@ -26,7 +27,6 @@ def check_null(data):
     null_data = pd.concat([total, percent], axis=1, keys=['total', '%'])
     return null_data
 
-
 check_null(data)
 print(check_null(data))
 
@@ -35,7 +35,6 @@ print(data.info())
 
 # Encode categorical variables
 le = LabelEncoder()
-
 
 def LabelEncoder(df):
     for i in df.columns:
@@ -46,11 +45,10 @@ def LabelEncoder(df):
 
 
 modified_data = LabelEncoder(data)
-# modified_data['Weekend']= le.fit_transform(modified_data['Weekend'])
 print(modified_data.info())
 
 # Define input variables and target (label)
-cols = ['Session', 'Revenue']
+cols = ['Revenue']
 x = modified_data.drop(cols, axis=1)
 
 # Check variables correlation
@@ -65,19 +63,18 @@ sns.heatmap(correlation, annot=None, fmt="d", cmap="Blues", ax=ax1)
 
 # After checking strong correlation between 'ProductRelated' and 'ProductRelated_Duration', and 'ExitRates'
 # and 'BounceRates', reduce further the number of columns
-cols2 = ['Session', 'Revenue', 'ProductRelated_Duration', 'ExitRates']
+cols2 = ['Revenue', 'ProductRelated_Duration', 'ExitRates']
 x = modified_data.drop(cols2, axis=1)
 y = modified_data['Revenue']
+modified_data.to_csv('modified_data.csv')
 
 # Check distribution of label classes
 sns.countplot(y, ax=ax2)
-# print(sorted((y)).value_counts())
 
-# SMOTE (oversampling)
+
+# SMOTE (oversampling) - to solve class imbalance
 smote = SMOTE(sampling_strategy='minority')
 X_sm, y_sm = SMOTE().fit_resample(x, y)
-# print
-# print(sorted((y_sm).value_counts()))
 
 # graph
 sns.countplot(y_sm, ax=ax3)
@@ -91,32 +88,45 @@ X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
 # XGBoost classifier
-xgb_clf = XGBClassifier(eta=0.1, max_depth=20, n_estimators=200)
+xgb_clf = XGBClassifier()
 xgb_clf.fit(X_train, y_train)
 xgb_score = xgb_clf.score(X_test, y_test)
 xgb_training_score = xgb_clf.score(X_train, y_train)
 predictions_xgb = xgb_clf.predict(X_test)
-# CHECK OVERFITTING
-print("XGB Accuracy score:", xgb_score)
-print("XGB TRAINING Accuracy score:", xgb_training_score)
+
+# Gradient Boosting Classifier
+gb_clf = GradientBoostingClassifier()
+gb_clf.fit(X_train, y_train)
+gb_score=gb_clf.score(X_test,y_test)
+gb_training_score = gb_clf.score(X_train, y_train)
+predictions_gb= gb_clf.predict(X_test)
+
+# Check scores
+print("XGBoost Accuracy score:", round((xgb_score),4)*100,"%")
+print("XGBoost TRAINING Accuracy score:", round((xgb_training_score),4)*100,"%")
+
+print("Gradient Boosting Accuracy score:", round((gb_score),4)*100,"%")
+print("Gradient Boosting Training Accuracy score:", round((gb_training_score),4)*100,"%")
+
+# Classification reports
 print("XGBoost Classification Report")
 print(classification_report(y_test, predictions_xgb))
+print("Gradient Boosting Classification Report")
+print(classification_report(y_test, predictions_gb))
 
-# Rearrange the dataset columns
+# Rearrange the dataset that will be used as an input for the training job on GCP
 label='Revenue'
 cols = modified_data.columns.tolist()
 colIdx = modified_data.columns.get_loc(label)
-# Do nothing if the label is in the 0th position
-# Otherwise, change the order of columns to move label to 0th position
+# Check if the label is in the first column. Otherwise, rearranges it
 if colIdx != 0:
     cols = cols[colIdx:colIdx + 1] + cols[0:colIdx] + cols[colIdx + 1:]
-# Change the order of data so that label is in the 0th column
 gcp_input = modified_data[cols]
 
-# Convert the data to float
+# Final transformations required by GCP
 gcp_input = gcp_input.astype('float')
 gcp_input['Revenue'] = gcp_input['Revenue'].astype('int')
-# Write the dataset as a csv
+# Writes the final dataset as a csv file
 gcp_input.to_csv('online_shoppers_input.csv', index=False, header=False)
 
 # Confusion matrix
