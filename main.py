@@ -127,7 +127,7 @@ gcp_input = modified_data[cols]
 gcp_input = gcp_input.astype('float')
 gcp_input['Revenue'] = gcp_input['Revenue'].astype('int')
 # Writes the final dataset as a csv file
-gcp_input.to_csv('online_shoppers_input.csv', index=False, header=False)
+gcp_input.to_csv('online_shoppers_gcp_input.csv', index=False, header=False)
 
 # Confusion matrix
 titles_options = [("Confusion matrix, without normalization", None),
