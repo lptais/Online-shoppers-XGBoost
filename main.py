@@ -66,7 +66,6 @@ sns.heatmap(correlation, annot=None, fmt="d", cmap="Blues", ax=ax1)
 cols2 = ['Revenue', 'ProductRelated_Duration', 'ExitRates']
 x = modified_data.drop(cols2, axis=1)
 y = modified_data['Revenue']
-modified_data.to_csv('modified_data.csv')
 
 # Check distribution of label classes
 sns.countplot(y, ax=ax2)
@@ -116,6 +115,8 @@ print(classification_report(y_test, predictions_gb))
 
 # Rearrange the dataset that will be used as an input for the training job on GCP
 label='Revenue'
+useless_columns=['ProductRelated_Duration', 'ExitRates']
+modified_data=modified_data.drop(useless_columns, axis=1)
 cols = modified_data.columns.tolist()
 colIdx = modified_data.columns.get_loc(label)
 # Check if the label is in the first column. Otherwise, rearranges it
@@ -131,7 +132,7 @@ gcp_input.to_csv('online_shoppers_gcp_input.csv', index=False, header=False)
 
 # Confusion matrix
 titles_options = [("XGBoost confusion matrix, without normalization", None),
-                  ("XGboost normalized confusion matrix", 'true')]
+                  ("XGBoost normalized confusion matrix", 'true')]
 for title, normalize in titles_options:
     disp = plot_confusion_matrix(xgb_clf, X_test, y_test,
                                  display_labels=[1, 0],
