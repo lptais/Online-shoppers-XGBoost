@@ -45,7 +45,7 @@ def LabelEncoder(df):
 
 
 modified_data = LabelEncoder(data)
-modified_data['Weekend']= le.fit_transform(modified_data['Weekend'])  #also convert Weekend that is a bool variable
+modified_data['Weekend']=le.fit_transform(modified_data['Weekend'])
 print(modified_data.info())
 
 # Define input variables and target (label)
@@ -70,7 +70,6 @@ y = modified_data['Revenue']
 
 # Check distribution of label classes
 sns.countplot(y, ax=ax2)
-
 
 # SMOTE (oversampling) - to solve class imbalance
 smote = SMOTE(sampling_strategy='minority')
