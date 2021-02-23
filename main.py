@@ -126,7 +126,7 @@ if colIdx != 0:
 gcp_input = modified_data[cols]
 
 # Final transformations required by GCP
-gcp_input.iloc[:,1:15] = gcp_input.iloc[:,1:15].astype('float')
+gcp_input.iloc[:,1:16] = gcp_input.iloc[:,1:16].astype('float')
 gcp_input[label] = gcp_input[label].astype('string')
 # Writes the final dataset as a csv file
 gcp_input.to_csv('online_shoppers_gcp_input.csv', index=False, header=False)
